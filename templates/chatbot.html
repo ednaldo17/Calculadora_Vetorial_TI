@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Vetorial</title>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #EBF8FF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #chat-container {
+            width: 90%;
+            max-width: 700px;
+            height: 85vh;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        #chat-header {
+            background: linear-gradient(135deg, #3182CE, #2B6CB0);
+            color: white;
+            padding: 15px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #chat-header h2 {
+            margin: 0;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        #chat-box {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .message {
+            display: flex;
+            max-width: 80%;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            justify-content: flex-end;
+        }
+
+        .user-message .bubble,
+        .user-bubble {
+            background-color: #3182CE;
+            color: white !important;
+            border-radius: 18px;
+            border-bottom-right-radius: 4px;
+            padding: 10px 15px;
+            word-break: break-word;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .bot-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #E2E8F0;
+        }
+        .bot-message .bubble {
+            background-color: #E2E8F0;
+            color: #2D3748;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            padding: 10px 15px;
+            word-break: break-word;
+        }
+        .bubble ul {
+            padding-left: 20px;
+            margin: 8px 0 0 0;
+        }
+         .bubble strong {
+            color: #2B6CB0;
+        }
+
+        #input-area {
+            display: flex;
+            gap: 10px;
+            padding: 12px 15px;
+            border-top: 1px solid #E2E8F0;
+            align-items: center;
+        }
+        #operation {
+            border: 1px solid #CBD5E0;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 0.95em;
+            background: white;
+        }
+        #user-input {
+            flex-grow: 1;
+            border: 1px solid #CBD5E0;
+            border-radius: 20px;
+            padding: 10px 18px;
+            font-size: 1em;
+        }
+        #user-input:focus {
+            outline: none;
+            border-color: #3182CE;
+            box-shadow: 0 0 0 2px #BEE3F8;
+        }
+        #send-btn {
+            background-color: #3182CE;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 1.3em;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        #send-btn:hover { background-color: #2B6CB0; }
+        .result-mono { font-family: monospace; background:#fff; padding:6px; border-radius:6px; display:inline-block; }
+
+        .user-message .result-mono {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            border-radius: 0;
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-header">
+            <h2>Calculadora Vetorial</h2>
+        </div>
+
+        <div id="chat-box" aria-live="polite">
+            <div class="message bot-message">
+                <img src="/static/img_logo.png" alt="Bot Avatar" class="bot-avatar">
+                <div class="bubble">
+                    Olá! 👋 Sou seu assistente vetorial.<br>
+                    Escolha a operação e digite vetores/pontos no formato <strong>(x,y,z)</strong>.<br>
+                    Exemplos: <em>(1,2,3), (3,1,0)</em> ou para reta: <em>(1,2), (3,5)</em>
+                </div>
+            </div>
+        </div>
+
+        <div id="input-area">
+            <select id="operation" aria-label="Operação">
+                <option value="somar">➕ Soma</option>
+                <option value="subtracao">➖ Subtração</option>
+                <option value="produto_escalar">⚙️ Produto escalar</option>
+                <option value="produto_vetorial">🔁 Produto vetorial</option>
+                <option value="projecao">📐 Projeção</option>
+                <option value="componente">📏 Componente</option>
+                <option value="norma">📊 Norma</option>
+                <option value="unitario">🧭 Vetor unitário</option>
+                <option value="reta">📈 Equação da reta</option>
+                <option value="plano">🪶 Equação do plano</option>
+                <option value="gram_schmidt">🎯 Gram-Schmidt</option>
+            </select>
+
+            <input type="text" id="user-input" placeholder="Digite vetores/pontos aqui... (ex.: (1,2,3), (3,1,0))" autocomplete="off">
+            <button id="send-btn" aria-label="Enviar mensagem">➤</button>
+        </div>
+    </div>
+
+<script>
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const operationSelect = document.getElementById('operation');
+
+        sendBtn.addEventListener('click', handleSendMessage);
+        userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSendMessage(); });
+
+        function appendMessage(html, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+
+            if (sender === 'user') {
+                messageDiv.classList.add('user-message');
+                messageDiv.innerHTML = `<div class="bubble user-bubble">${html}</div>`;
+            } else {
+                messageDiv.classList.add('bot-message');
+                messageDiv.innerHTML = `
+                    <img src="/static/img_logo.png" alt="Bot Avatar" class="bot-avatar">
+                    <div class="bubble">${html}</div>
+                `;
+            }
+
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return messageDiv;
+        }
+
+        function formatValue(val) {
+            if (val === null || val === undefined) return String(val);
+            if (Array.isArray(val)) return "(" + val.map(x => formatValue(x)).join(", ") + ")";
+            if (typeof val === "object") return JSON.stringify(val, null, 2);
+            return String(val);
+        }
+
+        async function handleSendMessage() {
+            const text = userInput.value.trim();
+            const oper = operationSelect.value;
+            if (!text) return;
+
+            appendMessage(`<span class="result-mono">(${oper}) ${text}</span>`, 'user');
+            userInput.value = '';
+            userInput.focus();
+
+            const thinking = appendMessage('Analisando...', 'bot');
+
+            try {
+                const resp = await fetch('/calcular', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ operacao: oper, entrada: text })
+                });
+
+                const data = await resp.json();
+
+                if (data.erro) {
+                    thinking.querySelector('.bubble').innerHTML = `<strong>Erro:</strong> ${data.erro}`;
+                    return;
+                }
+
+                const res = data.resultado ?? data;
+                
+                let html = '';
+
+                if (res && typeof res === 'object' && res.latex) {
+                    
+                    if (typeof res.latex === 'object') {
+                        for (const [k, v] of Object.entries(res.latex)) {
+                            if (k === 'parametricas' && Array.isArray(v)) {
+                                html += `<div><strong>${k}</strong>:</div>`;
+                                v.forEach(eq => {
+                                    html += `<div class="latex" style="margin-left: 10px;">\\(${eq}\\)</div>`;
+                                });
+                            } else if (typeof v === 'string') {
+                                html += `<div><strong>${k}</strong>: <span class="latex">\\(${v}\\)</span></div>`;
+                            }
+                        }
+                    } else if (typeof res.latex === 'string') {
+                        html += `<div class="latex">\\(${res.latex}\\)</div>`;
+                    }
+                    
+                    if (res.vetorial) {
+                         html += `<div><strong>vetorial</strong>: <span class="result-mono">${res.vetorial}</span></div>`;
+                    }
+
+                } 
+                else if (Array.isArray(res)) {
+                    html += `<div><strong>Resultado</strong>: ${formatValue(res)}</div>`;
+                } 
+                else if (typeof res === 'object' && res !== null) {
+                    html += '<div>';
+                    for (const [k, v] of Object.entries(res)) {
+                        html += `<div><strong>${k}</strong>: ${formatValue(v)}</div>`;
+                    }
+                    html += '</div>';
+                } 
+                else {
+                    html += `<div><strong>Resultado</strong>: ${formatValue(res)}</div>`;
+                }
+
+                thinking.querySelector('.bubble').innerHTML = html;
+
+                if (window.MathJax) {
+                    try { window.MathJax.typesetPromise(); } catch(e){}
+                }
+
+            } catch (error) {
+                console.error(error);
+                thinking.querySelector('.bubble').textContent = '❌ Erro: não foi possível conectar ao servidor.';
+            }
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
